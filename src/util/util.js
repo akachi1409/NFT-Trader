@@ -24,10 +24,10 @@ const getDataForContract = async (contract, date) => {
     },
   };
   const config1 = {
-    headers:{
-      "x-api-key": "852d96d562f646fd88184540dbd4f434"
-    }
-  }
+    headers: {
+      "x-api-key": "852d96d562f646fd88184540dbd4f434",
+    },
+  };
   const params =
     "asset_contract_address=" +
     contract +
@@ -48,12 +48,16 @@ const getDataForContract = async (contract, date) => {
     }
     console.log(data, next);
   });
-  await delay(30000 );
+  await delay(30000);
   var sequence = 1;
   while (next != "") {
-    var param1 = "&event_type=successful&cursor=" + next;
+    var param1 =
+      "asset_contract_address=" +
+      contract +
+      "&event_type=successful&cursor=" +
+      next;
     var url1 = "https://api.opensea.io/api/v1/events?" + param1;
-    if (sequence%2 == 1){
+    if (sequence % 2 == 1) {
       await axios.get(url1, config1).then((res) => {
         if (res.status === 400 || res.status === 500) return res.data;
         console.log(res.data.asset_events);
@@ -66,8 +70,7 @@ const getDataForContract = async (contract, date) => {
         }
         console.log(data, next);
       });
-    }
-    else{
+    } else {
       await axios.get(url1, config).then((res) => {
         if (res.status === 400 || res.status === 500) return res.data;
         console.log(res.data.asset_events);
@@ -81,8 +84,8 @@ const getDataForContract = async (contract, date) => {
         console.log(data, next);
       });
     }
-    sequence ++;
-    await delay(30000 );
+    sequence++;
+    await delay(30000);
   }
 
   return data;
