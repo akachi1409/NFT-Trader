@@ -56,7 +56,7 @@ class Main extends Component {
     const today = new Date();
     for (const item of selectData) {
     //   for (var index = 0; index < 90; index++) {
-        const dateTimestamp = today.getTime() - 10 * 24*60*60*1000;
+        const dateTimestamp = today.getTime() - 3 * 24*60*60*1000;
         const date = new Date(dateTimestamp)
         const data = await getDataForContract(item.contract, date);
         console.log("data: " + data);

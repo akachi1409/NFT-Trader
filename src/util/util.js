@@ -23,6 +23,11 @@ const getDataForContract = async (contract, date) => {
       "x-api-key": "d218315d31bb4d0bb4308c2cd45938a2",
     },
   };
+  const config1 = {
+    headers:{
+      "x-api-key": "852d96d562f646fd88184540dbd4f434"
+    }
+  }
   const params =
     "asset_contract_address=" +
     contract +
@@ -37,29 +42,47 @@ const getDataForContract = async (contract, date) => {
     console.log(res.data.asset_events);
     next = res.data.next;
     // data += res.data.asset_events;
-    console.log("length:", res.data.asset_events.length);
+    console.log("Config :", res.data.asset_events.length);
     for (var i = 0; i < res.data.asset_events.length; i++) {
       data.push(res.data.asset_events[i].winner_account.address);
     }
     console.log(data, next);
   });
-  await delay(10000 * Math.random());
+  await delay(30000 );
+  var sequence = 1;
   while (next != "") {
     var param1 = "&event_type=successful&cursor=" + next;
     var url1 = "https://api.opensea.io/api/v1/events?" + param1;
-    await axios.get(url1, config).then((res) => {
-      if (res.status === 400 || res.status === 500) return res.data;
-      console.log(res.data.asset_events);
-      next = res.data.next;
-      // data += res.data.asset_events;
-      console.log("length:", res.data.asset_events.length);
-      for (var i = 0; i < res.data.asset_events.length; i++) {
-        // console.log("--", i, res.data.asset_events[i]);
-        data.push(res.data.asset_events[i].winner_account.address);
-      }
-      console.log(data, next);
-    });
-    await delay(20000 * Math.random());
+    if (sequence%2 == 1){
+      await axios.get(url1, config1).then((res) => {
+        if (res.status === 400 || res.status === 500) return res.data;
+        console.log(res.data.asset_events);
+        next = res.data.next;
+        // data += res.data.asset_events;
+        console.log("Config 1:", res.data.asset_events.length);
+        for (var i = 0; i < res.data.asset_events.length; i++) {
+          // console.log("--", i, res.data.asset_events[i]);
+          data.push(res.data.asset_events[i].winner_account.address);
+        }
+        console.log(data, next);
+      });
+    }
+    else{
+      await axios.get(url1, config).then((res) => {
+        if (res.status === 400 || res.status === 500) return res.data;
+        console.log(res.data.asset_events);
+        next = res.data.next;
+        // data += res.data.asset_events;
+        console.log("Config:", res.data.asset_events.length);
+        for (var i = 0; i < res.data.asset_events.length; i++) {
+          // console.log("--", i, res.data.asset_events[i]);
+          data.push(res.data.asset_events[i].winner_account.address);
+        }
+        console.log(data, next);
+      });
+    }
+    sequence ++;
+    await delay(30000 );
   }
 
   return data;
@@ -79,22 +102,4 @@ const getDataForContract = async (contract, date) => {
   //   });
 };
 
-const getDataForContractUsingAlchemy = (contract) => {
-  var data = JSON.stringify({
-    jsonrpc: "2.0",
-    id: 0,
-    method: "alchemy_getAssetTransfers",
-    params: [
-      {
-        fromBlock: "0xA97AB8",
-        toBlock: "0xA97CAC",
-        fromAddress: "0x3f5CE5FBFe3E9af3971dD833D26bA9b5C936f0bE",
-        contractAddresses: ["0x7fc66500c84a76ad7e9c93437bfc5ac33e2ddae9"],
-        maxCount: "0x5",
-        excludeZeroValue: true,
-        category: ["external", "token"],
-      },
-    ],
-  });
-};
 export { getDataForContract };
