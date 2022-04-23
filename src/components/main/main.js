@@ -1,7 +1,15 @@
 import { Component } from "react";
-import { Container, Row, Col, Button, Modal, Form, Table } from "react-bootstrap";
-import { ToastContainer, toast } from 'react-toastify';
-  import 'react-toastify/dist/ReactToastify.css';
+import {
+  Container,
+  Row,
+  Col,
+  Button,
+  Modal,
+  Form,
+  Table,
+} from "react-bootstrap";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 import "./main.css";
 import { getDataForContract } from "../../util/util";
@@ -12,7 +20,9 @@ class Main extends Component {
     this.state = {
       selectModal: false,
       constractAdd: "",
-      selectData:[]
+      selectData: [],
+      resultData: [],
+      changeFlag: false
     };
   }
   notify = (msg) => toast(msg);
@@ -23,43 +33,69 @@ class Main extends Component {
     this.setState({ selectModal: false });
   };
   setContractAdd = (e) => {
-    this.setState({constractAdd: e.target.value});
+    this.setState({ constractAdd: e.target.value });
   };
 
-  getData = ()=>{
-      const { selectData } = this.state
-      if (selectData.length ==0){
-          this.notify("You should choose at least one collection to search!")
-          return;
-      }
-      for (var i = 0 ; i<selectData.length; i++){
-        console.log("k:", selectData[i].contract)
-      }
-    //   getDataForContract(constractAdd).then(response=>{
-    //     if (response.status === 400 || response.status === 500)
-    //     throw response.data;
+  getData = () => {
+    const { selectData } = this.state;
+    if (selectData.length == 0) {
+      this.notify("You should choose at least one collection to search!");
+      return;
+    }
+    for (var i = 0; i < selectData.length; i++) {
+      console.log("k:", selectData[i].contract);
+    }
+  };
+  test = async () => {
+    const { selectData, resultData, changeFlag } = this.state;
+    if (selectData.length == 0) {
+      this.notify("You should choose at least one collection to search!");
+      return;
+    }
+    for (const item of selectData) {
+      await getDataForContract(item.contract).then((response) => {
+        // console.log("response:", response)
+        if (response.status === 400 || response.status === 500)
+          throw response.data;
 
-    //     const data = response.asset_events;
-    //     console.log("data: " + data)
-    //   });
-  }
-  addData = () =>{
-      const { constractAdd, selectData } = this.state;
-      const addData = {'contract': constractAdd}
-      selectData.push(addData);
-      this.setState({constractAdd: ""})
-      this.setState({selectData: selectData});
-  }
-  saveChanges = () =>{
-      this.addData();
-      this.hideSelectModal();
-  }
-  cancelChanges = () =>{
-      this.setState({constractAdd: ""})
-      this.hideSelectModal();
-  }
+        for ( var i = 0 ; i< response.asset_events.length; i++){
+            // console.log("asset_events:", response.asset_events[i].transaction.to_account.address)
+            const add = response.asset_events[i].transaction.to_account.address;
+            var flag = false;
+            for (var j = 0 ;j<resultData.length; j++ ){
+                if (resultData[j] == add){
+                    flag = true;
+                }
+            }
+            console.log(flag)
+            if (!flag){
+                resultData.push(add);
+                console.log(resultData, add);
+            }
+        }
+        
+      });
+    }
+    console.log("resultData:", resultData)
+    this.setState({resultData: resultData, changeFlag: !changeFlag});
+  };
+  addData = () => {
+    const { constractAdd, selectData } = this.state;
+    const addData = { contract: constractAdd };
+    selectData.push(addData);
+    this.setState({ constractAdd: "" });
+    this.setState({ selectData: selectData });
+  };
+  saveChanges = () => {
+    this.addData();
+    this.hideSelectModal();
+  };
+  cancelChanges = () => {
+    this.setState({ constractAdd: "" });
+    this.hideSelectModal();
+  };
   render() {
-    const { selectModal, contractAdd, selectData } = this.state;
+    const { selectModal, contractAdd, selectData, resultData } = this.state;
     return (
       <>
         <Container>
@@ -74,29 +110,50 @@ class Main extends Component {
               >
                 Select
               </Button>
-              <Button variant="info" size="lg" className="general-btn" onClick = {()=>this.getData()}>
+              <Button
+                variant="info"
+                size="lg"
+                className="general-btn"
+                onClick={() => this.test()}
+              >
                 Search
               </Button>
             </Col>
           </Row>
           <Row className="genearl-mt-2">
             <Table striped bordered hover>
-                <thead>
-                    <tr>
-                        <th>#</th>
-                        <th>Contract Address</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {
-                        selectData.map((item, index) => (
-                            <tr key={index}>
-                                <td>{index}</td>
-                                <td>{item.contract}</td>
-                            </tr>
-                        ))
-                    }
-                </tbody>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Contract Address</th>
+                </tr>
+              </thead>
+              <tbody>
+                {selectData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{index}</td>
+                    <td>{item.contract}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </Table>
+          </Row>
+          <Row>
+            <Table striped bordered hover>
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Wallet Address</th>
+                </tr>
+              </thead>
+              <tbody>
+                  {resultData.map((item, index) => (
+                      <tr key={index}>
+                          <td>{index}</td>
+                          <td>{item}</td>
+                      </tr>
+                  ))}
+              </tbody>
             </Table>
           </Row>
           <ToastContainer />
@@ -115,14 +172,18 @@ class Main extends Component {
                     type="text"
                     placeholder="Type the contract address here"
                     value={contractAdd}
-                    onChange = {(e)=>this.setContractAdd(e)}
+                    onChange={(e) => this.setContractAdd(e)}
                   />
                 </Col>
               </Row>
             </Modal.Body>
             <Modal.Footer>
-              <Button variant="secondary" onClick = {()=> this.cancelChanges()}>Cancel</Button>
-              <Button variant="primary" onClick = {()=> this.saveChanges()}>Save changes</Button>
+              <Button variant="secondary" onClick={() => this.cancelChanges()}>
+                Cancel
+              </Button>
+              <Button variant="primary" onClick={() => this.saveChanges()}>
+                Save changes
+              </Button>
             </Modal.Footer>
           </Modal>
         </Container>

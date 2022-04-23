@@ -11,7 +11,6 @@ const getDataForContract = (contract) => {
   return axios
     .get(url, config)
     .then((res) => {
-        console.log("res", res)
       if (res.status === 400 || res.status === 500) throw res.data;
       return res.data;
     })
