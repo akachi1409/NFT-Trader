@@ -10,6 +10,7 @@ import {
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import delay from "delay";
 
 import "./main.css";
 import { getDataForContract } from "../../util/util";
@@ -22,7 +23,7 @@ class Main extends Component {
       constractAdd: "",
       selectData: [],
       resultData: [],
-      changeFlag: false
+      changeFlag: false,
     };
   }
   notify = (msg) => toast(msg);
@@ -52,32 +53,40 @@ class Main extends Component {
       this.notify("You should choose at least one collection to search!");
       return;
     }
+    const today = new Date();
     for (const item of selectData) {
-      await getDataForContract(item.contract).then((response) => {
-        // console.log("response:", response)
-        if (response.status === 400 || response.status === 500)
-          throw response.data;
+    //   for (var index = 0; index < 90; index++) {
+        const dateTimestamp = today.getTime() - 10 * 24*60*60*1000;
+        const date = new Date(dateTimestamp)
+        const data = await getDataForContract(item.contract, date);
+        console.log("data: " + data);
+        // await getDataForContract(item.contract, date).then((response) => {
+        //   console.log("response:", response);
+        //   if (response.status === 400 || response.status === 500)
+        //     throw response.data;
 
-        for ( var i = 0 ; i< response.asset_events.length; i++){
-            // console.log("asset_events:", response.asset_events[i].transaction.to_account.address)
-            const add = response.asset_events[i].transaction.to_account.address;
-            var flag = false;
-            for (var j = 0 ;j<resultData.length; j++ ){
-                if (resultData[j] == add){
-                    flag = true;
-                }
-            }
-            console.log(flag)
-            if (!flag){
-                resultData.push(add);
-                console.log(resultData, add);
-            }
-        }
-        
-      });
+        //   for (var i = 0; i < response.asset_events.length; i++) {
+        //     // console.log("asset_events:", response.asset_events[i].transaction.to_account.address)
+        //     const add = response.asset_events[i].transaction.to_account.address;
+        //     var flag = false;
+        //     for (var j = 0; j < resultData.length; j++) {
+        //       if (resultData[j] == add) {
+        //         flag = true;
+        //       }
+        //     }
+        //     console.log(flag);
+        //     if (!flag) {
+        //       resultData.push(add);
+        //       console.log(resultData, add);
+        //     }
+        //   }
+        // });
+        console.log("-------------------------------------")
+        // await delay(5000);
+    //   }
     }
-    console.log("resultData:", resultData)
-    this.setState({resultData: resultData, changeFlag: !changeFlag});
+    console.log("resultData:", resultData);
+    this.setState({ resultData: resultData, changeFlag: !changeFlag });
   };
   addData = () => {
     const { constractAdd, selectData } = this.state;
@@ -147,12 +156,12 @@ class Main extends Component {
                 </tr>
               </thead>
               <tbody>
-                  {resultData.map((item, index) => (
-                      <tr key={index}>
-                          <td>{index}</td>
-                          <td>{item}</td>
-                      </tr>
-                  ))}
+                {resultData.map((item, index) => (
+                  <tr key={index}>
+                    <td>{index}</td>
+                    <td>{item}</td>
+                  </tr>
+                ))}
               </tbody>
             </Table>
           </Row>
