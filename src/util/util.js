@@ -18,6 +18,9 @@ function getFormattedDate(date) {
 }
 
 const getDataForContract = async (contract, date) => {
+  console.log("contract:", contract);
+  const startDateTimestamp = date.getTime() + 1 * 24 * 60 * 60 * 1000;
+  const startDate = new Date(startDateTimestamp);
   const config = {
     headers: {
       "x-api-key": "d218315d31bb4d0bb4308c2cd45938a2",
@@ -33,6 +36,8 @@ const getDataForContract = async (contract, date) => {
     contract +
     "&event_type=successful&occurred_after=" +
     getFormattedDate(date) +
+    "&occurred_before=" +
+    getFormattedDate(startDate) +
     "&only_opensea=true"; //+ "&occurred_before="+ getFormattedDate(date);
   var url = "https://api.opensea.io/api/v1/events?" + params;
   var data = [];
@@ -44,48 +49,65 @@ const getDataForContract = async (contract, date) => {
     // data += res.data.asset_events;
     console.log("Config :", res.data.asset_events.length);
     for (var i = 0; i < res.data.asset_events.length; i++) {
-      data.push(res.data.asset_events[i].winner_account.address);
+      data.push([{
+        'from': res.data.asset_events[i].transaction.from_account.address,
+        'to':res.data.asset_events[i].winner_account.address
+      }]);
     }
     console.log(data, next);
   });
-  await delay(30000);
+  // await delay(30000);
   var sequence = 1;
-  while (next != "") {
+  while (next != null) {
     var param1 =
       "asset_contract_address=" +
       contract +
       "&event_type=successful&cursor=" +
-      next;
+      next +
+      "&event_type=successful&occurred_after=" +
+      getFormattedDate(date) +
+      "&occurred_before=" +
+      getFormattedDate(startDate);
     var url1 = "https://api.opensea.io/api/v1/events?" + param1;
-    if (sequence % 2 == 1) {
-      await axios.get(url1, config1).then((res) => {
-        if (res.status === 400 || res.status === 500) return res.data;
-        console.log(res.data.asset_events);
-        next = res.data.next;
-        // data += res.data.asset_events;
-        console.log("Config 1:", res.data.asset_events.length);
-        for (var i = 0; i < res.data.asset_events.length; i++) {
-          // console.log("--", i, res.data.asset_events[i]);
-          data.push(res.data.asset_events[i].winner_account.address);
-        }
-        console.log(data, next);
-      });
-    } else {
-      await axios.get(url1, config).then((res) => {
-        if (res.status === 400 || res.status === 500) return res.data;
-        console.log(res.data.asset_events);
-        next = res.data.next;
-        // data += res.data.asset_events;
-        console.log("Config:", res.data.asset_events.length);
-        for (var i = 0; i < res.data.asset_events.length; i++) {
-          // console.log("--", i, res.data.asset_events[i]);
-          data.push(res.data.asset_events[i].winner_account.address);
-        }
-        console.log(data, next);
-      });
+    try {
+      if (sequence % 2 == 1) {
+        await axios.get(url1, config1).then((res) => {
+          if (res.status === 400 || res.status === 500) return res.data;
+          console.log(res);
+          next = res.data.next;
+          console.log("Config 1:", res.data.asset_events.length);
+          for (var i = 0; i < res.data.asset_events.length; i++) {
+            console.log(res.data.asset_events[i].created_date < date);
+            data.push([{
+              'from': res.data.asset_events[i].transaction.from_account.address,
+              'to':res.data.asset_events[i].winner_account.address
+            }]);
+          }
+          console.log(data, next);
+        });
+      } else {
+        await axios.get(url1, config).then((res) => {
+          if (res.status === 400 || res.status === 500) return res.data;
+          console.log(res);
+          next = res.data.next;
+          // data += res.data.asset_events;
+          console.log("Config:", res.data.asset_events.length);
+          for (var i = 0; i < res.data.asset_events.length; i++) {
+            data.push([{
+              'from': res.data.asset_events[i].transaction.from_account.address,
+              'to':res.data.asset_events[i].winner_account.address
+            }]);
+          }
+          console.log(data, next);
+        });
+      }
+    } catch (err) {
+      console.log("err:", err);
+      await delay(1000);
     }
+
     sequence++;
-    await delay(30000);
+    // await delay(20000);
   }
 
   return data;

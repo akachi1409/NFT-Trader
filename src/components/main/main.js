@@ -10,9 +10,11 @@ import {
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
-import delay from "delay";
+import Calendar from "react-calendar";
+import WAValidator from 'wallet-address-validator';
 
 import "./main.css";
+import "react-calendar/dist/Calendar.css";
 import { getDataForContract } from "../../util/util";
 
 class Main extends Component {
@@ -21,6 +23,7 @@ class Main extends Component {
     this.state = {
       selectModal: false,
       constractAdd: "",
+      calendarAdd: new Date(),
       selectData: [],
       resultData: [],
       changeFlag: false,
@@ -53,44 +56,43 @@ class Main extends Component {
       this.notify("You should choose at least one collection to search!");
       return;
     }
-    const today = new Date();
+    const data = [];
+    var tempResult = [];
     for (const item of selectData) {
-    //   for (var index = 0; index < 90; index++) {
-        const dateTimestamp = today.getTime() - 3 * 24*60*60*1000;
-        const date = new Date(dateTimestamp)
-        const data = await getDataForContract(item.contract, date);
-        console.log("data: " + data);
-        // await getDataForContract(item.contract, date).then((response) => {
-        //   console.log("response:", response);
-        //   if (response.status === 400 || response.status === 500)
-        //     throw response.data;
-
-        //   for (var i = 0; i < response.asset_events.length; i++) {
-        //     // console.log("asset_events:", response.asset_events[i].transaction.to_account.address)
-        //     const add = response.asset_events[i].transaction.to_account.address;
-        //     var flag = false;
-        //     for (var j = 0; j < resultData.length; j++) {
-        //       if (resultData[j] == add) {
-        //         flag = true;
-        //       }
-        //     }
-        //     console.log(flag);
-        //     if (!flag) {
-        //       resultData.push(add);
-        //       console.log(resultData, add);
-        //     }
-        //   }
-        // });
-        console.log("-------------------------------------")
-        // await delay(5000);
-    //   }
+      for (var index = 0; index < 90; index++) {
+        const dateTimestamp = item.calendar.getTime() - 3 * 24 * 60 * 60 * 1000;
+        const date = new Date(dateTimestamp);
+        var temp = await getDataForContract(item.contract, date);
+        for (var i = 0; i < temp.length; i++) {
+          console.log(temp[i], typeof temp[i]);
+          if (data.includes(temp[i])) continue;
+          data.push(temp[i]);
+        }
+        if (tempResult.length == 0) {
+          for (var i = 0; i < data.length; i++) {
+            tempResult.push(data[i]);
+          }
+        } else {
+          for (var i = 0; i < tempResult.length; i++) {
+            if (!data.includes(tempResult[i])) {
+              tempResult = tempResult.filter((x) => x !== tempResult[i]);
+            }
+          }
+        }
+      }
+      console.log("data: " + data, typeof data, data.length);
     }
-    console.log("resultData:", resultData);
-    this.setState({ resultData: resultData, changeFlag: !changeFlag });
+    console.log("resultData:", tempResult);
+    this.setState({ resultData: tempResult, changeFlag: !changeFlag });
   };
   addData = () => {
-    const { constractAdd, selectData } = this.state;
-    const addData = { contract: constractAdd };
+    const { constractAdd, selectData, calendarAdd } = this.state;
+
+    if (!WAValidator.validate(constractAdd, "ETH")){
+      this.notify("You should input valid wallet address.");
+      return;
+    }
+    const addData = { contract: constractAdd, calendar: calendarAdd };
     selectData.push(addData);
     this.setState({ constractAdd: "" });
     this.setState({ selectData: selectData });
@@ -104,7 +106,8 @@ class Main extends Component {
     this.hideSelectModal();
   };
   render() {
-    const { selectModal, contractAdd, selectData, resultData } = this.state;
+    const { selectModal, contractAdd, selectData, resultData, calendarAdd } =
+      this.state;
     return (
       <>
         <Container>
@@ -152,14 +155,16 @@ class Main extends Component {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Wallet Address</th>
+                  <th>Seller Wallet Address</th>
+                  <th>Buyer Wallet Address</th>
                 </tr>
               </thead>
               <tbody>
                 {resultData.map((item, index) => (
                   <tr key={index}>
                     <td>{index}</td>
-                    <td>{item}</td>
+                    <td>{item[0].from}</td>
+                    <td>{item[0].to}</td>
                   </tr>
                 ))}
               </tbody>
@@ -183,6 +188,17 @@ class Main extends Component {
                     value={contractAdd}
                     onChange={(e) => this.setContractAdd(e)}
                   />
+                </Col>
+              </Row>
+              <Row>
+                <Col sm={4}>
+                  <h3>Calendar:</h3>
+                </Col>
+                <Col sm={8}>
+                  <Calendar
+                    value={calendarAdd}
+                    onChange={(value) => this.setState({ calendarAdd: value })}
+                  ></Calendar>
                 </Col>
               </Row>
             </Modal.Body>
