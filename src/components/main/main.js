@@ -1,14 +1,17 @@
 import { Component } from "react";
-import {
-  Container,
-  Row,
-  Col,
-  Button,
-  Modal,
-  Form,
-  Table,
-  Spinner,
-} from "react-bootstrap";
+import { Row, Col, Modal, Form, Spinner } from "react-bootstrap";
+import Grid from "@mui/material/Grid";
+import Paper from "@mui/material/Paper";
+import Button from "@mui/material/Button";
+import Table from "@mui/material/Table";
+import TableBody from "@mui/material/TableBody";
+import TableCell, { tableCellClasses } from "@mui/material/TableCell";
+import TableContainer from "@mui/material/TableContainer";
+import TableHead from "@mui/material/TableHead";
+import TableRow from "@mui/material/TableRow";
+import { styled } from "@mui/material/styles";
+import Typography from "@mui/material/Typography";
+import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "react-calendar";
@@ -18,6 +21,32 @@ import "./main.css";
 import "react-calendar/dist/Calendar.css";
 import { getDataForContract } from "../../util/util";
 
+const StyledTableCell = styled(TableCell)(({ theme }) => ({
+  [`&.${tableCellClasses.head}`]: {
+    backgroundColor: theme.palette.primary.light,
+    color: theme.palette.common.white,
+  },
+  [`&.${tableCellClasses.body}`]: {
+    fontSize: 14,
+  },
+}));
+
+const StyledTableRow = styled(TableRow)(({ theme }) => ({
+  "&:nth-of-type(odd)": {
+    backgroundColor: theme.palette.action.hover,
+  },
+  // hide last border
+  "&:last-child td, &:last-child th": {
+    border: 0,
+  },
+}));
+const HomeIcon= () =>{
+  return (
+    <SvgIcon>
+      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
+    </SvgIcon>
+  );
+}
 class Main extends Component {
   constructor(props) {
     super(props);
@@ -55,16 +84,19 @@ class Main extends Component {
   };
   test = async () => {
     const { selectData, changeFlag } = this.state;
-    this.setState({loading: true});
+    this.setState({ loading: true });
     if (selectData.length === 0) {
       this.notify("You should choose at least one collection to search!");
-      this.setState({loading: false});
+      this.setState({ loading: false });
       return;
     }
 
     var tempResult = [];
     for (const item of selectData) {
-      console.log("----------------------------------------------------------------", tempResult);
+      console.log(
+        "----------------------------------------------------------------",
+        tempResult
+      );
       const data = [];
       const dateTimestamp = item.calendar.getTime();
       const date = new Date(dateTimestamp);
@@ -77,9 +109,6 @@ class Main extends Component {
       console.log("data: " + data, data.length);
       var temp = [];
       if (tempResult.length == 0) {
-        // for (let i = 0; i < data.length; i++) {
-        //   tempResult.push(data[i]);
-        // }
         tempResult = tempResult.concat(data);
       } else {
         for (let i = 0; i < tempResult.length; i++) {
@@ -90,18 +119,21 @@ class Main extends Component {
           //     temp.push(tempResult[i]);
           //   }
           // }
-          if ( data.includes(tempResult[i]) ){
-            temp.push(tempResult[i])
+          if (data.includes(tempResult[i])) {
+            temp.push(tempResult[i]);
           }
         }
         tempResult = [];
         tempResult = tempResult.concat(temp);
       }
       console.log("tempData:", tempResult);
-      
     }
     console.log("resultData:", tempResult);
-    this.setState({ resultData: tempResult, changeFlag: !changeFlag, loading: false });
+    this.setState({
+      resultData: tempResult,
+      changeFlag: !changeFlag,
+      loading: false,
+    });
   };
   addData = () => {
     const { constractAdd, selectData, calendarAdd, actionAdd } = this.state;
@@ -135,6 +167,8 @@ class Main extends Component {
       date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
     return str;
   }
+
+  
   render() {
     const {
       selectModal,
@@ -143,149 +177,197 @@ class Main extends Component {
       resultData,
       calendarAdd,
       actionAdd,
-      loading
+      loading,
     } = this.state;
     return (
       <>
-        <Container>
-          {loading && (
-            <Row>
-              <Button variant="primary" disabled>
-                <Spinner
-                  as="span"
-                  animation="grow"
-                  size="sm"
-                  role="status"
-                  aria-hidden="true"
-                />
-                Loading...
-              </Button>
-            </Row>
-          )}
+        {/* <Container> */}
+        <Paper elevation={5} className="main-paper">
+          <Grid container spacing={4}>
+            <Grid item xs={3}>
+              <Paper elevation={0} >
+                <Button
+                  id="basic-button"
+                  aria-controls={ undefined}
+                  aria-haspopup="true"
+                  aria-expanded={undefined}
+                  style={{marginTop:"2em"}}
+                >
+                  Dashboard
+                </Button>
+              </Paper>
+            </Grid>
+            <Grid item xs={8}>
+              {loading && (
+                <Grid container spacing={4}>
+                  <Button variant="primary" disabled>
+                    <Spinner
+                      as="span"
+                      animation="grow"
+                      size="sm"
+                      role="status"
+                      aria-hidden="true"
+                    />
+                    Loading...
+                  </Button>
+                </Grid>
+              )}
 
-          <Row>
-            <Col sm={4}></Col>
-            <Col sm={8}>
-              <Button
-                variant="primary"
-                size="lg"
-                className="general-btn"
-                onClick={() => this.showSelectModal()}
-              >
-                Select
-              </Button>
-              <Button
-                variant="info"
-                size="lg"
-                className="general-btn"
-                onClick={() => this.test()}
-              >
-                Search
-              </Button>
-            </Col>
-          </Row>
-          <Row className="genearl-mt-2">
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Contract Address</th>
-                  <th>End Date</th>
-                  <th>Action</th>
-                </tr>
-              </thead>
-              <tbody>
-                {selectData.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>{item.contract}</td>
-                    <td>{this.getFormattedDate(item.calendar)}</td>
-                    <td>
-                      {item.actionAdd == "1" && "Buy"}
-                      {item.actionAdd == "2" && "Sell"}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Row>
-          <Row>
-            <Table striped bordered hover>
-              <thead>
-                <tr>
-                  <th>#</th>
-                  <th>Wallet Address</th>
-                </tr>
-              </thead>
-              <tbody>
-                {resultData.map((item, index) => (
-                  <tr key={index}>
-                    <td>{index}</td>
-                    <td>{item}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-          </Row>
-          <ToastContainer />
-          <Modal show={selectModal}>
-            <Modal.Header>
-              <Modal.Title>Add contract address to search!</Modal.Title>
-            </Modal.Header>
-            <Modal.Body>
               <Row>
-                <Col sm={4}>
-                  <h3>Contract:</h3>
-                </Col>
+                <Col sm={4}></Col>
                 <Col sm={8}>
-                  <Form.Control
-                    size="lg"
-                    type="text"
-                    placeholder="Type the contract address here"
-                    value={contractAdd}
-                    onChange={(e) => this.setContractAdd(e)}
-                  />
-                </Col>
-              </Row>
-              <Row>
-                <Col sm={4}>
-                  <h3>Calendar:</h3>
-                </Col>
-                <Col sm={8}>
-                  <Calendar
-                    value={calendarAdd}
-                    onChange={(value) => this.setState({ calendarAdd: value })}
-                  ></Calendar>
-                </Col>
-              </Row>
-              <Row>
-                <Col sm={4}>
-                  <h3>Action:</h3>
-                </Col>
-                <Col sm={8}>
-                  <Form.Select
-                    aria-label=""
-                    value={actionAdd}
-                    onChange={(e) =>
-                      this.setState({ actionAdd: e.target.value })
-                    }
+                  <Button
+                    variant="contained"
+                    color="success"
+                    className="general-btn"
+                    onClick={() => this.showSelectModal()}
                   >
-                    <option value="1">Buy</option>
-                    <option value="2">Sell</option>
-                  </Form.Select>
+                    Select
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className="general-btn"
+                    onClick={() => this.test()}
+                  >
+                    Search
+                  </Button>
                 </Col>
               </Row>
-            </Modal.Body>
-            <Modal.Footer>
-              <Button variant="secondary" onClick={() => this.cancelChanges()}>
-                Cancel
-              </Button>
-              <Button variant="primary" onClick={() => this.saveChanges()}>
-                Save changes
-              </Button>
-            </Modal.Footer>
-          </Modal>
-        </Container>
+              <Row className="genearl-mt-2">
+                <TableContainer component={Paper}>
+                  <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>#</StyledTableCell>
+                        <StyledTableCell>Contract Address</StyledTableCell>
+                        <StyledTableCell>End Date</StyledTableCell>
+                        <StyledTableCell>Action</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {selectData.map((item, index) => (
+                        <StyledTableRow key={index}>
+                          <StyledTableCell>{index}</StyledTableCell>
+                          <StyledTableCell>{item.contract}</StyledTableCell>
+                          <StyledTableCell>
+                            {this.getFormattedDate(item.calendar)}
+                          </StyledTableCell>
+                          <StyledTableCell>
+                            {item.actionAdd == "1" && "Buy"}
+                            {item.actionAdd == "2" && "Sell"}
+                          </StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Row>
+              <Row>
+                <TableContainer component={Paper} className="genearl-mt-2">
+                  <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                    <TableHead>
+                      <TableRow>
+                        <StyledTableCell>#</StyledTableCell>
+                        <StyledTableCell>Wallet Address</StyledTableCell>
+                      </TableRow>
+                    </TableHead>
+                    <TableBody>
+                      {resultData.map((item, index) => (
+                        <StyledTableRow key={index}>
+                          <StyledTableCell>{index}</StyledTableCell>
+                          <StyledTableCell>{item}</StyledTableCell>
+                        </StyledTableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </TableContainer>
+              </Row>
+              <ToastContainer />
+              <Modal show={selectModal}>
+                <Modal.Header>
+                  <Modal.Title>
+                    <Typography variant="h5" component="h6">
+                      Add contract address to search!
+                    </Typography>
+                  </Modal.Title>
+                </Modal.Header>
+                <Modal.Body>
+                  <Row>
+                    <Col sm={4}>
+                      <Typography variant="h5" component="h6">
+                        Contract:
+                      </Typography>
+                    </Col>
+                    <Col sm={8}>
+                      <Form.Control
+                        size="lg"
+                        type="text"
+                        placeholder="Type the contract address here"
+                        value={contractAdd}
+                        onChange={(e) => this.setContractAdd(e)}
+                      />
+                    </Col>
+                  </Row>
+                  <Row className="genearl-mt-2">
+                    <Col sm={4}>
+                      <Typography variant="h5" component="h6">
+                        Calendar:
+                      </Typography>
+                    </Col>
+                    <Col sm={8}>
+                      <Calendar
+                        value={calendarAdd}
+                        onChange={(value) =>
+                          this.setState({ calendarAdd: value })
+                        }
+                      ></Calendar>
+                    </Col>
+                  </Row>
+                  <Row className="genearl-mt-2">
+                    <Col sm={4}>
+                      <Typography variant="h5" component="h6">
+                        Action:
+                      </Typography>
+                    </Col>
+                    <Col sm={8}>
+                      <Form.Select
+                        aria-label=""
+                        value={actionAdd}
+                        onChange={(e) =>
+                          this.setState({ actionAdd: e.target.value })
+                        }
+                      >
+                        <option value="1">Buy</option>
+                        <option value="2">Sell</option>
+                      </Form.Select>
+                    </Col>
+                  </Row>
+                </Modal.Body>
+                <Modal.Footer>
+                  <Button
+                    variant="contained"
+                    color="success"
+                    className="general-btn"
+                    onClick={() => this.cancelChanges()}
+                  >
+                    Cancel
+                  </Button>
+                  <Button
+                    variant="contained"
+                    color="primary"
+                    className="general-btn"
+                    onClick={() => this.saveChanges()}
+                  >
+                    Save changes
+                  </Button>
+                </Modal.Footer>
+              </Modal>
+            </Grid>
+            <Grid item xs={1}></Grid>
+          </Grid>
+        </Paper>
+        {/* </Container> */}
       </>
     );
   }

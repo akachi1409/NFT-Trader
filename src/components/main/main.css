@@ -1,4 +1,9 @@
 .general-btn{
-    margin-top:2em;
-    margin-left:3em;
+    margin-top:2em!important; 
+    margin-left:3em!important;
+}
+.main-paper{
+    border-radius: 30px!important;
+    height: 100vh;
+    margin: 2em!important;
 }
