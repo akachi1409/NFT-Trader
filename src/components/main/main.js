@@ -7,11 +7,12 @@ import {
   Modal,
   Form,
   Table,
+  Spinner,
 } from "react-bootstrap";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "react-calendar";
-import WAValidator from 'wallet-address-validator';
+import WAValidator from "wallet-address-validator";
 
 import "./main.css";
 import "react-calendar/dist/Calendar.css";
@@ -24,9 +25,11 @@ class Main extends Component {
       selectModal: false,
       constractAdd: "",
       calendarAdd: new Date(),
+      actionAdd: 1,
       selectData: [],
       resultData: [],
       changeFlag: false,
+      loading: false,
     };
   }
   notify = (msg) => toast(msg);
@@ -42,7 +45,7 @@ class Main extends Component {
 
   getData = () => {
     const { selectData } = this.state;
-    if (selectData.length == 0) {
+    if (selectData.length === 0) {
       this.notify("You should choose at least one collection to search!");
       return;
     }
@@ -51,51 +54,72 @@ class Main extends Component {
     }
   };
   test = async () => {
-    const { selectData, resultData, changeFlag } = this.state;
-    if (selectData.length == 0) {
+    const { selectData, changeFlag } = this.state;
+    this.setState({loading: true});
+    if (selectData.length === 0) {
       this.notify("You should choose at least one collection to search!");
+      this.setState({loading: false});
       return;
     }
-    const data = [];
+
     var tempResult = [];
     for (const item of selectData) {
-      for (var index = 0; index < 90; index++) {
-        const dateTimestamp = item.calendar.getTime() - 3 * 24 * 60 * 60 * 1000;
-        const date = new Date(dateTimestamp);
-        var temp = await getDataForContract(item.contract, date);
-        for (var i = 0; i < temp.length; i++) {
-          console.log(temp[i], typeof temp[i]);
-          if (data.includes(temp[i])) continue;
-          data.push(temp[i]);
-        }
-        if (tempResult.length == 0) {
-          for (var i = 0; i < data.length; i++) {
-            tempResult.push(data[i]);
-          }
-        } else {
-          for (var i = 0; i < tempResult.length; i++) {
-            if (!data.includes(tempResult[i])) {
-              tempResult = tempResult.filter((x) => x !== tempResult[i]);
-            }
-          }
-        }
+      console.log("----------------------------------------------------------------", tempResult);
+      const data = [];
+      const dateTimestamp = item.calendar.getTime();
+      const date = new Date(dateTimestamp);
+      var temp = await getDataForContract(item.contract, date, item.actionAdd);
+      for (let i = 0; i < temp.length; i++) {
+        // console.log(temp[i]);
+        if (data.includes(temp[i])) continue;
+        data.push(temp[i]);
       }
-      console.log("data: " + data, typeof data, data.length);
+      console.log("data: " + data, data.length);
+      var temp = [];
+      if (tempResult.length == 0) {
+        // for (let i = 0; i < data.length; i++) {
+        //   tempResult.push(data[i]);
+        // }
+        tempResult = tempResult.concat(data);
+      } else {
+        for (let i = 0; i < tempResult.length; i++) {
+          // for ( let j = 0 ; j< data.length; j++){
+          //   // console.log(tempResult[i] , data[j])
+          //   if ( tempResult[i] == data[j]){
+          //     console.log(tempResult[i] , data[j])
+          //     temp.push(tempResult[i]);
+          //   }
+          // }
+          if ( data.includes(tempResult[i]) ){
+            temp.push(tempResult[i])
+          }
+        }
+        tempResult = [];
+        tempResult = tempResult.concat(temp);
+      }
+      console.log("tempData:", tempResult);
+      
     }
     console.log("resultData:", tempResult);
-    this.setState({ resultData: tempResult, changeFlag: !changeFlag });
+    this.setState({ resultData: tempResult, changeFlag: !changeFlag, loading: false });
   };
   addData = () => {
-    const { constractAdd, selectData, calendarAdd } = this.state;
-
-    if (!WAValidator.validate(constractAdd, "ETH")){
+    const { constractAdd, selectData, calendarAdd, actionAdd } = this.state;
+    // console.log(this.state);
+    if (!WAValidator.validate(constractAdd, "ETH")) {
       this.notify("You should input valid wallet address.");
       return;
     }
-    const addData = { contract: constractAdd, calendar: calendarAdd };
+    const addData = {
+      contract: constractAdd,
+      calendar: calendarAdd,
+      actionAdd: actionAdd,
+    };
+    // console.log("addData:", addData);
     selectData.push(addData);
     this.setState({ constractAdd: "" });
     this.setState({ selectData: selectData });
+    this.setState({ actionAdd: "1" });
   };
   saveChanges = () => {
     this.addData();
@@ -105,12 +129,40 @@ class Main extends Component {
     this.setState({ constractAdd: "" });
     this.hideSelectModal();
   };
+
+  getFormattedDate(date) {
+    var str =
+      date.getFullYear() + "-" + (date.getMonth() + 1) + "-" + date.getDate();
+    return str;
+  }
   render() {
-    const { selectModal, contractAdd, selectData, resultData, calendarAdd } =
-      this.state;
+    const {
+      selectModal,
+      contractAdd,
+      selectData,
+      resultData,
+      calendarAdd,
+      actionAdd,
+      loading
+    } = this.state;
     return (
       <>
         <Container>
+          {loading && (
+            <Row>
+              <Button variant="primary" disabled>
+                <Spinner
+                  as="span"
+                  animation="grow"
+                  size="sm"
+                  role="status"
+                  aria-hidden="true"
+                />
+                Loading...
+              </Button>
+            </Row>
+          )}
+
           <Row>
             <Col sm={4}></Col>
             <Col sm={8}>
@@ -138,6 +190,8 @@ class Main extends Component {
                 <tr>
                   <th>#</th>
                   <th>Contract Address</th>
+                  <th>End Date</th>
+                  <th>Action</th>
                 </tr>
               </thead>
               <tbody>
@@ -145,6 +199,11 @@ class Main extends Component {
                   <tr key={index}>
                     <td>{index}</td>
                     <td>{item.contract}</td>
+                    <td>{this.getFormattedDate(item.calendar)}</td>
+                    <td>
+                      {item.actionAdd == "1" && "Buy"}
+                      {item.actionAdd == "2" && "Sell"}
+                    </td>
                   </tr>
                 ))}
               </tbody>
@@ -155,16 +214,14 @@ class Main extends Component {
               <thead>
                 <tr>
                   <th>#</th>
-                  <th>Seller Wallet Address</th>
-                  <th>Buyer Wallet Address</th>
+                  <th>Wallet Address</th>
                 </tr>
               </thead>
               <tbody>
                 {resultData.map((item, index) => (
                   <tr key={index}>
                     <td>{index}</td>
-                    <td>{item[0].from}</td>
-                    <td>{item[0].to}</td>
+                    <td>{item}</td>
                   </tr>
                 ))}
               </tbody>
@@ -199,6 +256,23 @@ class Main extends Component {
                     value={calendarAdd}
                     onChange={(value) => this.setState({ calendarAdd: value })}
                   ></Calendar>
+                </Col>
+              </Row>
+              <Row>
+                <Col sm={4}>
+                  <h3>Action:</h3>
+                </Col>
+                <Col sm={8}>
+                  <Form.Select
+                    aria-label=""
+                    value={actionAdd}
+                    onChange={(e) =>
+                      this.setState({ actionAdd: e.target.value })
+                    }
+                  >
+                    <option value="1">Buy</option>
+                    <option value="2">Sell</option>
+                  </Form.Select>
                 </Col>
               </Row>
             </Modal.Body>

@@ -17,9 +17,9 @@ function getFormattedDate(date) {
   return str;
 }
 
-const getDataForContract = async (contract, date) => {
+const getDataForContract = async (contract, date, action) => {
   console.log("contract:", contract);
-  const startDateTimestamp = date.getTime() + 1 * 24 * 60 * 60 * 1000;
+  const startDateTimestamp = date.getTime() + 2 * 24 * 60 * 60 * 1000;
   const startDate = new Date(startDateTimestamp);
   const config = {
     headers: {
@@ -44,17 +44,17 @@ const getDataForContract = async (contract, date) => {
   var next = "";
   await axios.get(url, config).then((res) => {
     if (res.status === 400 || res.status === 500) return res.data;
-    console.log(res.data.asset_events);
+    // console.log(res.data.asset_events);
     next = res.data.next;
-    // data += res.data.asset_events;
-    console.log("Config :", res.data.asset_events.length);
+    // console.log("Config :", res.data.asset_events.length);
     for (var i = 0; i < res.data.asset_events.length; i++) {
-      data.push([{
-        'from': res.data.asset_events[i].transaction.from_account.address,
-        'to':res.data.asset_events[i].winner_account.address
-      }]);
+      if ( action == "1"){
+        data.push(res.data.asset_events[i].winner_account.address);
+      }else{
+        data.push(res.data.asset_events[i].transaction.from_account.address);
+      }
     }
-    console.log(data, next);
+    // console.log(data, next);
   });
   // await delay(30000);
   var sequence = 1;
@@ -70,35 +70,36 @@ const getDataForContract = async (contract, date) => {
       getFormattedDate(startDate);
     var url1 = "https://api.opensea.io/api/v1/events?" + param1;
     try {
-      if (sequence % 2 == 1) {
+      if (sequence % 2 === 1) {
         await axios.get(url1, config1).then((res) => {
           if (res.status === 400 || res.status === 500) return res.data;
-          console.log(res);
+          // console.log(res);
           next = res.data.next;
-          console.log("Config 1:", res.data.asset_events.length);
+          // console.log("Config 1:", res.data.asset_events.length);
           for (var i = 0; i < res.data.asset_events.length; i++) {
             console.log(res.data.asset_events[i].created_date < date);
-            data.push([{
-              'from': res.data.asset_events[i].transaction.from_account.address,
-              'to':res.data.asset_events[i].winner_account.address
-            }]);
+            if ( action == "1"){
+              data.push(res.data.asset_events[i].winner_account.address);
+            }else{
+              data.push(res.data.asset_events[i].transaction.from_account.address);
+            }
           }
-          console.log(data, next);
+          // console.log(data, next);
         });
       } else {
         await axios.get(url1, config).then((res) => {
           if (res.status === 400 || res.status === 500) return res.data;
-          console.log(res);
+          // console.log(res);
           next = res.data.next;
-          // data += res.data.asset_events;
-          console.log("Config:", res.data.asset_events.length);
+          // console.log("Config:", res.data.asset_events.length);
           for (var i = 0; i < res.data.asset_events.length; i++) {
-            data.push([{
-              'from': res.data.asset_events[i].transaction.from_account.address,
-              'to':res.data.asset_events[i].winner_account.address
-            }]);
+            if ( action == "1"){
+              data.push(res.data.asset_events[i].winner_account.address);
+            }else{
+              data.push(res.data.asset_events[i].transaction.from_account.address);
+            }
           }
-          console.log(data, next);
+          // console.log(data, next);
         });
       }
     } catch (err) {
@@ -111,20 +112,6 @@ const getDataForContract = async (contract, date) => {
   }
 
   return data;
-  // return axios
-  //   .get(url, config)
-  //   .then((res) => {
-  //     if (res.status === 400 || res.status === 500) throw res.data;
-  //     console.log("res", res);
-  //     if ( res.data.next !=""){
-  //       var url1 =  "https://api.opensea.io/api/v1/events?asset_contract_address="+ contract+ "&cursor="+res.data.next
-  //       axios.get(url1, config).then((res1)=>{console.log("res1", res1);})
-  //     }
-  //     // return res.data;
-  //   })
-  //   .catch((err) => {
-  //     throw err[1];
-  //   });
 };
 
 export { getDataForContract };
