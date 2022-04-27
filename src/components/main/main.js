@@ -11,7 +11,7 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import SvgIcon, { SvgIconProps } from '@mui/material/SvgIcon';
+import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "react-calendar";
@@ -40,11 +40,22 @@ const StyledTableRow = styled(TableRow)(({ theme }) => ({
     border: 0,
   },
 }));
-const HomeIcon= () =>{
+
+function Copyright(props) {
   return (
-    <SvgIcon>
-      <path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z" />
-    </SvgIcon>
+    <Typography
+      variant="body2"
+      color="text.secondary"
+      align="center"
+      {...props}
+    >
+      {"Copyright © "}
+      {/* <Link color="inherit" href="https://mui.com/">
+        Your Website
+      </Link>{" "} */}
+      {new Date().getFullYear()}
+      {"."}
+    </Typography>
   );
 }
 class Main extends Component {
@@ -168,7 +179,6 @@ class Main extends Component {
     return str;
   }
 
-  
   render() {
     const {
       selectModal,
@@ -184,20 +194,7 @@ class Main extends Component {
         {/* <Container> */}
         <Paper elevation={5} className="main-paper">
           <Grid container spacing={4}>
-            <Grid item xs={3}>
-              <Paper elevation={0} >
-                <Button
-                  id="basic-button"
-                  aria-controls={ undefined}
-                  aria-haspopup="true"
-                  aria-expanded={undefined}
-                  style={{marginTop:"2em"}}
-                >
-                  Dashboard
-                </Button>
-              </Paper>
-            </Grid>
-            <Grid item xs={8}>
+            <Grid item xs={12}>
               {loading && (
                 <Grid container spacing={4}>
                   <Button variant="primary" disabled>
@@ -235,53 +232,67 @@ class Main extends Component {
                 </Col>
               </Row>
               <Row className="genearl-mt-2">
-                <TableContainer component={Paper}>
-                  <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>#</StyledTableCell>
-                        <StyledTableCell>Contract Address</StyledTableCell>
-                        <StyledTableCell>End Date</StyledTableCell>
-                        <StyledTableCell>Action</StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {selectData.map((item, index) => (
-                        <StyledTableRow key={index}>
-                          <StyledTableCell>{index}</StyledTableCell>
-                          <StyledTableCell>{item.contract}</StyledTableCell>
-                          <StyledTableCell>
-                            {this.getFormattedDate(item.calendar)}
-                          </StyledTableCell>
-                          <StyledTableCell>
-                            {item.actionAdd == "1" && "Buy"}
-                            {item.actionAdd == "2" && "Sell"}
-                          </StyledTableCell>
-                        </StyledTableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <Col sm={2}></Col>
+                <Col sm={8}>
+                  <TableContainer component={Paper}>
+                    <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                      <TableHead>
+                        <TableRow>
+                          <StyledTableCell>#</StyledTableCell>
+                          <StyledTableCell>Contract Address</StyledTableCell>
+                          <StyledTableCell>End Date</StyledTableCell>
+                          <StyledTableCell>Action</StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {selectData.map((item, index) => (
+                          <StyledTableRow key={index}>
+                            <StyledTableCell>{index}</StyledTableCell>
+                            <StyledTableCell>{item.contract}</StyledTableCell>
+                            <StyledTableCell>
+                              {this.getFormattedDate(item.calendar)}
+                            </StyledTableCell>
+                            <StyledTableCell>
+                              {item.actionAdd == "1" && "Buy"}
+                              {item.actionAdd == "2" && "Sell"}
+                            </StyledTableCell>
+                          </StyledTableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Col>
+                <Col sm={2}></Col>
               </Row>
               <Row>
-                <TableContainer component={Paper} className="genearl-mt-2">
-                  <Table sx={{ minWidth: 700 }} aria-label="customized table">
-                    <TableHead>
-                      <TableRow>
-                        <StyledTableCell>#</StyledTableCell>
-                        <StyledTableCell>Wallet Address</StyledTableCell>
-                      </TableRow>
-                    </TableHead>
-                    <TableBody>
-                      {resultData.map((item, index) => (
-                        <StyledTableRow key={index}>
-                          <StyledTableCell>{index}</StyledTableCell>
-                          <StyledTableCell>{item}</StyledTableCell>
-                        </StyledTableRow>
-                      ))}
-                    </TableBody>
-                  </Table>
-                </TableContainer>
+                <Col sm={2}></Col>
+                <Col sm={8}>
+                  <TableContainer component={Paper} className="genearl-mt-2">
+                    <Table sx={{ minWidth: 700 }} aria-label="customized table">
+                      <TableHead>
+                        <TableRow>
+                          <StyledTableCell>#</StyledTableCell>
+                          <StyledTableCell>Wallet Address</StyledTableCell>
+                        </TableRow>
+                      </TableHead>
+                      <TableBody>
+                        {resultData.map((item, index) => (
+                          <StyledTableRow key={index}>
+                            <StyledTableCell>{index}</StyledTableCell>
+                            <StyledTableCell>{item}</StyledTableCell>
+                          </StyledTableRow>
+                        ))}
+                      </TableBody>
+                    </Table>
+                  </TableContainer>
+                </Col>
+                <Col sm={2}></Col>
+              </Row>
+              <Row>
+                <Col sm={2}></Col>
+                <Col sm={8}>
+                  <Copyright sx={{ pt: 4 }} />
+                </Col>
               </Row>
               <ToastContainer />
               <Modal show={selectModal}>
@@ -364,7 +375,9 @@ class Main extends Component {
                 </Modal.Footer>
               </Modal>
             </Grid>
-            <Grid item xs={1}></Grid>
+            
+            {/* <Grid item xs={1}></Grid> */}
+            
           </Grid>
         </Paper>
         {/* </Container> */}

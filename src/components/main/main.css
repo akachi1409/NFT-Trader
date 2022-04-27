@@ -3,7 +3,8 @@
     margin-left:3em!important;
 }
 .main-paper{
-    border-radius: 30px!important;
+    /* border-radius: 30px!important; */
     height: 100vh;
     margin: 2em!important;
+    padding-top: 3em;
 }
