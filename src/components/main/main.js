@@ -11,7 +11,9 @@ import TableHead from "@mui/material/TableHead";
 import TableRow from "@mui/material/TableRow";
 import { styled } from "@mui/material/styles";
 import Typography from "@mui/material/Typography";
-import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
+import LoadingButton from "@mui/lab/LoadingButton";
+import SaveIcon from "@mui/icons-material/Save";
+// import SvgIcon, { SvgIconProps } from "@mui/material/SvgIcon";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import Calendar from "react-calendar";
@@ -25,15 +27,19 @@ const StyledTableCell = styled(TableCell)(({ theme }) => ({
   [`&.${tableCellClasses.head}`]: {
     backgroundColor: theme.palette.primary.light,
     color: theme.palette.common.white,
+    borderWidth: "2px",
+    borderColor: theme.palette.common.white,
   },
   [`&.${tableCellClasses.body}`]: {
     fontSize: 14,
+    // justfyContent:center
   },
 }));
 
 const StyledTableRow = styled(TableRow)(({ theme }) => ({
   "&:nth-of-type(odd)": {
     backgroundColor: theme.palette.action.hover,
+    borderColor: theme.palette.common.black,
   },
   // hide last border
   "&:last-child td, &:last-child th": {
@@ -196,8 +202,8 @@ class Main extends Component {
           <Grid container spacing={4}>
             <Grid item xs={12}>
               {loading && (
-                <Grid container spacing={4}>
-                  <Button variant="primary" disabled>
+                <Row>
+                  {/* <Button variant="primary" disabled>
                     <Spinner
                       as="span"
                       animation="grow"
@@ -206,8 +212,21 @@ class Main extends Component {
                       aria-hidden="true"
                     />
                     Loading...
-                  </Button>
-                </Grid>
+                  </Button> */}
+                  <Col xs={2}></Col>
+                  <Col xs={8}>
+                    <LoadingButton
+                      loading
+                      loadingPosition="start"
+                      startIcon={<SaveIcon />}
+                      variant="contained"
+                      color="success"
+                    >
+                      Loading
+                    </LoadingButton>
+                  </Col>
+                  <Col xs={2}></Col>
+                </Row>
               )}
 
               <Row>
@@ -238,7 +257,9 @@ class Main extends Component {
                     <Table sx={{ minWidth: 700 }} aria-label="customized table">
                       <TableHead>
                         <TableRow>
-                          <StyledTableCell>#</StyledTableCell>
+                          <StyledTableCell className="main-table-header">
+                            #
+                          </StyledTableCell>
                           <StyledTableCell>Contract Address</StyledTableCell>
                           <StyledTableCell>End Date</StyledTableCell>
                           <StyledTableCell>Action</StyledTableCell>
@@ -271,7 +292,9 @@ class Main extends Component {
                     <Table sx={{ minWidth: 700 }} aria-label="customized table">
                       <TableHead>
                         <TableRow>
-                          <StyledTableCell>#</StyledTableCell>
+                          <StyledTableCell className="main-table-header">
+                            #
+                          </StyledTableCell>
                           <StyledTableCell>Wallet Address</StyledTableCell>
                         </TableRow>
                       </TableHead>
@@ -295,10 +318,12 @@ class Main extends Component {
                 </Col>
               </Row>
               <ToastContainer />
-              <Modal show={selectModal}
-               size="lg"
-               aria-labelledby="contained-modal-title-vcenter"
-               centered>
+              <Modal
+                show={selectModal}
+                size="lg"
+                aria-labelledby="contained-modal-title-vcenter"
+                centered
+              >
                 <Modal.Header>
                   <Modal.Title>
                     <Typography variant="h5" component="h6">
@@ -378,9 +403,8 @@ class Main extends Component {
                 </Modal.Footer>
               </Modal>
             </Grid>
-            
+
             {/* <Grid item xs={1}></Grid> */}
-            
           </Grid>
         </Paper>
         {/* </Container> */}

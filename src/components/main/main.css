@@ -4,7 +4,12 @@
 }
 .main-paper{
     /* border-radius: 30px!important; */
-    height: 100vh;
+    height: 800px;
     margin: 2em!important;
     padding-top: 3em;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+.main-table-header{
+    width: 50px
 }
