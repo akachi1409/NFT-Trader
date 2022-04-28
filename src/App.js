@@ -20,10 +20,10 @@ import ListItemButton from '@mui/material/ListItemButton';
 import ListItemIcon from '@mui/material/ListItemIcon';
 import ListItemText from '@mui/material/ListItemText';
 import DashboardIcon from '@mui/icons-material/Dashboard';
-// import MenuIcon from "@mui/icons-material/Menu";
+import MenuIcon from "@mui/icons-material/Menu";
 import ChevronLeftIcon from "@mui/icons-material/ChevronLeft";
 import NotificationsIcon from "@mui/icons-material/Notifications";
-
+import Logo from "./assets/logo.png";
 const drawerWidth = 240;
 const Drawer = styled(MuiDrawer, {
   shouldForwardProp: (prop) => prop !== "open",
@@ -96,7 +96,7 @@ function App() {
                   ...(open && { display: "none" }),
                 }}
               >
-                {/* <MenuIcon /> */}
+                <MenuIcon />
               </IconButton>
               <Typography
                 component="h1"
@@ -124,6 +124,7 @@ function App() {
                 px: [1],
               }}
             >
+              {/* <img src={Logo} className="logo-image"/> */}
               <IconButton onClick={toggleDrawer}>
                 <ChevronLeftIcon />
               </IconButton>

@@ -295,7 +295,10 @@ class Main extends Component {
                 </Col>
               </Row>
               <ToastContainer />
-              <Modal show={selectModal}>
+              <Modal show={selectModal}
+               size="lg"
+               aria-labelledby="contained-modal-title-vcenter"
+               centered>
                 <Modal.Header>
                   <Modal.Title>
                     <Typography variant="h5" component="h6">
