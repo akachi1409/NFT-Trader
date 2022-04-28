@@ -78,7 +78,16 @@ function App() {
   return (
     <div className="App">
       <ThemeProvider theme={mdTheme}>
-        <Box sx={{ display: "flex" }}>
+        <Box 
+        sx={{
+          display: "flex",
+          backgroundColor: (theme) =>
+            theme.palette.mode === "light"
+              ? theme.palette.grey[100]
+              : theme.palette.grey[900],
+          flexGrow: 1,
+          height: "100vh"
+        }}>
           <CssBaseline />
           <AppBar position="absolute" open={open}>
             <Toolbar
@@ -147,7 +156,6 @@ function App() {
                   ? theme.palette.grey[100]
                   : theme.palette.grey[900],
               flexGrow: 1,
-              overflow: "scroll",
             }}
           >
             <Toolbar />
